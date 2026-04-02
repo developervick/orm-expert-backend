@@ -6,39 +6,39 @@ info:
 paths:
   /api/token/:
     post:
-      operationId: token_create
+      operationId: api_token_create
       description: |-
         Takes a set of user credentials and returns an access and refresh JSON web
         token pair to prove the authentication of those credentials.
       tags:
-      - token
+      - api
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenObtainPair'
+              $ref: '#/components/schemas/MyTokenObtainPair'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenObtainPair'
+              $ref: '#/components/schemas/MyTokenObtainPair'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenObtainPair'
+              $ref: '#/components/schemas/MyTokenObtainPair'
         required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenObtainPair'
+                $ref: '#/components/schemas/MyTokenObtainPair'
           description: ''
   /api/token/refresh/:
     post:
-      operationId: token_refresh_create
+      operationId: api_token_refresh_create
       description: |-
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
       tags:
-      - token
+      - api
       requestBody:
         content:
           application/json:
@@ -60,7 +60,7 @@ paths:
           description: ''
 components:
   schemas:
-    TokenObtainPair:
+    MyTokenObtainPair:
       type: object
       properties:
         username:
@@ -69,16 +69,8 @@ components:
         password:
           type: string
           writeOnly: true
-        access:
-          type: string
-          readOnly: true
-        refresh:
-          type: string
-          readOnly: true
       required:
-      - access
       - password
-      - refresh
       - username
     TokenRefresh:
       type: object
