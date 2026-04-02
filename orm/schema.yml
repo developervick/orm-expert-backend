@@ -6,10 +6,12 @@ info:
 paths:
   /api/token/:
     post:
-      operationId: root_create
+      operationId: token_create
       description: |-
         Takes a set of user credentials and returns an access and refresh JSON web
         token pair to prove the authentication of those credentials.
+      tags:
+      - token
       requestBody:
         content:
           application/json:
@@ -31,12 +33,12 @@ paths:
           description: ''
   /api/token/refresh/:
     post:
-      operationId: refresh_create
+      operationId: token_refresh_create
       description: |-
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
       tags:
-      - refresh
+      - token
       requestBody:
         content:
           application/json:

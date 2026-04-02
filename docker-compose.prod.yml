@@ -56,19 +56,19 @@ services:
     networks:
       - orm-network
 
-  # swagger:
-  #   image: swaggerapi/swagger-ui
-  #   container_name: swagger-ui
-  #   ports:
-  #     - "8081:8080"
-  #   environment:
-  #     - SWAGGER_JSON=/schema.yml
-  #   volumes:
-  #     - ./orm/schema.yml:/schema.yml
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - orm-network
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    ports:
+      - "8081:8080"
+    environment:
+      - SWAGGER_JSON=/schema.yml
+    volumes:
+      - ./orm/schema.yml:/schema.yml
+    depends_on:
+      - backend
+    networks:
+      - orm-network
 
 volumes:
   postgres_data:
