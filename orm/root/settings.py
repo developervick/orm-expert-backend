@@ -48,7 +48,7 @@ INSTALLED_APPS = [
 
     #apps
     'users',
-    'orm',
+    'courses',
 ]
 
 MIDDLEWARE = [
