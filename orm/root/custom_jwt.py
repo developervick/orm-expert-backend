@@ -16,7 +16,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     
 
 def get_tokens_for_user(user):
-    if not user:
+    if not user.is_active:
       raise AuthenticationFailed("User is not active")
 
     refresh = RefreshToken.for_user(user)

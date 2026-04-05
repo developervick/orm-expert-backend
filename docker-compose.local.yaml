@@ -36,8 +36,11 @@ services:
       dockerfile: Dockerfile.local
     ports:
       - "8000:8000"
+      - "25:25"
     volumes:
       - ./orm:/app
+    environment:
+      - PYTHONUNBUFFERED=1
     env_file:
       - ./orm/.env.local
     depends_on:
