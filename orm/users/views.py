@@ -47,31 +47,31 @@ def signup(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @transaction.atomic
-def veryfy_otp(request):
+def verify_otp(request):
     try:
         uuid = request.data.get('uuid')
         otp = request.data.get('otp')
 
         if not uuid or not otp:
-            return Response({'status': 'all fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'all fields are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         otp_object = OTP.objects.select_related('user').filter(uuid=uuid).first()
 
         if not otp_object:
-            return Response({'status': 'invalid uuid'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'invalid uuid'}, status=status.HTTP_400_BAD_REQUEST)
 
         if otp_object.is_expired:
-            return Response({'status': 'otp is expired'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'otp is expired'}, status=status.HTTP_400_BAD_REQUEST)
 
         if str(otp_object.otp) != str(otp):
-            return Response({'status': 'invalid otp'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'invalid otp'}, status=status.HTTP_400_BAD_REQUEST)
 
         otp_object.is_expired = True
         otp_object.user.is_active = True
         otp_object.user.save()
         otp_object.save()
 
-        return Response({"message": "otp verified successfully", "data": get_tokens_for_user(otp_object.user), "error": None}, status=200)
+        return Response({"message": "otp verified successfully", "data": {"tokens": get_tokens_for_user(otp_object.user), "userId": otp_object.user.id}, "error": None}, status=200)
     except Exception as e:
         print(e)
         return Response({'status': 'something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
