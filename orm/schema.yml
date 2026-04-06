@@ -78,17 +78,6 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/v1/sendmail/:
-    get:
-      operationId: api_v1_sendmail_retrieve
-      tags:
-      - api
-      security:
-      - jwtAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
   /api/v1/signup/:
     post:
       operationId: api_v1_signup_create
@@ -105,15 +94,15 @@ components:
     MyTokenObtainPair:
       type: object
       properties:
-        username:
+        email:
           type: string
           writeOnly: true
         password:
           type: string
           writeOnly: true
       required:
+      - email
       - password
-      - username
     TokenRefresh:
       type: object
       properties:

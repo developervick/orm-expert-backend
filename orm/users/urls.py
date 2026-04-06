@@ -5,5 +5,5 @@ urlpatterns = [
     path('signup/', signup),
     path('login/', login),
     path('logout/', logout),
-    path('sendmail/', sendmail),
+    path('signup/veryfy-otp/', veryfy_otp),
 ]

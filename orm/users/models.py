@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import uuid
 
 class User(AbstractUser):
     class Roles(models.TextChoices):
@@ -9,9 +10,8 @@ class User(AbstractUser):
         CREATOR = 'creator', "Creator"
 
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=100, null=True)
+    first_name = models.CharField(max_length=100, null=False, blank=False)
     email = models.EmailField(max_length=250, null=False, blank=False, unique=True)
-    username = models.CharField(max_length=100, null=False, blank=False, unique=True)
     password = models.CharField(default="no pass")
     phone = models.CharField(max_length=12, null=True, blank=True)
     role = models.CharField(choices=Roles.choices, default=Roles.USER, null=False)
@@ -20,6 +20,22 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now=True, blank=False, null=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
+    USERNAME_FIELD = 'email'
+    username = None
+    REQUIRED_FIELDS = ['name', 'password']
+    last_name = None
+
+
+class OTP(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    email = models.EmailField(max_length=250, null=False, blank=False)
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, null=False, blank=False)
+    otp = models.CharField(max_length=6)
+    is_expired = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    created_at = models.DateTimeField(auto_now=True, blank=False, null=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
 
 class Role(models.Model):
