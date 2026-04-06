@@ -65,6 +65,7 @@ paths:
       - api
       security:
       - jwtAuth: []
+      - {}
       responses:
         '200':
           description: No response body
@@ -81,6 +82,17 @@ paths:
   /api/v1/signup/:
     post:
       operationId: api_v1_signup_create
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/signup/veryfy-otp/:
+    post:
+      operationId: api_v1_signup_veryfy_otp_create
       tags:
       - api
       security:
