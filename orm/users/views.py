@@ -8,7 +8,8 @@ from users.utils import generate_random_otp, send_otp_on_mail
 from django.db import transaction
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.views import APIView
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -70,8 +71,11 @@ def verify_otp(request):
         otp_object.user.is_active = True
         otp_object.user.save()
         otp_object.save()
-
-        return Response({"message": "otp verified successfully", "data": {"tokens": get_tokens_for_user(otp_object.user), "userId": otp_object.user.id}, "error": None}, status=200)
+        tokens = get_tokens_for_user(otp_object.user)
+        response =  Response({"message": "otp verified successfully", "data": {"tokens": tokens, "userId": otp_object.user.id}, "error": None}, status=200)
+        response.set_cookie('refreshToken', tokens['refresh'], httponly=True, secure=True, samesite='None')
+        response.set_cookie('accessToken', tokens['access'], httponly=True, secure=True, samesite='None')
+        return response
     except Exception as e:
         print(e)
         return Response({'status': 'something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -98,8 +102,10 @@ def login(request):
 
         if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
             return Response({'error': 'invalid credentials'}, status=400)
-
-        return Response({"message": "login successful", "data": {"tokens": get_tokens_for_user(user), "userId": user.id, "role": [user.role], "email": user.email}, "error": None}, status=status.HTTP_200_OK)
+        tokens = get_tokens_for_user(user)
+        response =  Response({"message": "login successful", "data": {"tokens": tokens, "userId": user.id, "role": [user.role], "email": user.email}, "error": None}, status=status.HTTP_200_OK)
+        response.set_cookie('refreshToken', tokens['refresh'], httponly=True, secure=True, samesite='None', max_age=7*24*60*60)
+        return response
     
     except Exception as e:
         print(e)
@@ -108,22 +114,65 @@ def login(request):
 @api_view(['POST'])
 def logout(request):
     try:
+        response = Response({
+            'message': 'Logged out',
+            'data': None,
+            'error': None
+        })
 
-        
-        if not request.user.is_authenticated:
-            return Response({'error': 'user is not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        refres_token = request.data.get('refresh')
+        # ✅ Clear the httpOnly cookie
+        response.delete_cookie(
+            key='refresh_token',
+            samesite='Strict'
+        )
 
-        if not refres_token:
-            return Response({'error': 'refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        token = RefreshToken(refres_token)
-        token.blacklist()
-        
-        return Response({"message": "logout successful", "data": None, "error": None}, status=status.HTTP_200_OK)
-    
+        return response
+            
     except Exception as e:
         print(e)
         return Response({'error': 'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class RefreshTokenView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        # Read refresh token from httpOnly cookie
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return Response({
+                'message': 'No refresh token',
+                'data': None,
+                'error': 1
+            }, status=401)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+
+            response = Response({
+                'message': 'Token refreshed',
+                'data': { 'access': new_access_token },  # ✅ new access token in body
+                'error': 0
+            })
+
+            # ✅ Rotate — set new refresh token in cookie
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                httponly=True,
+                secure=True,
+                samesite='Strict',
+                max_age=7 * 24 * 60 * 60
+            )
+
+            return response
+
+        except TokenError:
+            return Response({
+                'message': 'Invalid or expired refresh token',
+                'data': None,
+                'error': 1
+            }, status=401)
 
