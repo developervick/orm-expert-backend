@@ -86,24 +86,24 @@ def login(request):
         password = request.data.get('password')
 
         if not email or not password:
-            return Response({'status': 'all fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'all fields are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.filter(email=email).first()
 
         if not user:
-            return Response({'status': 'user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not user.is_active:
-            return Response({'status': 'user is not active'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'user is not active'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-            return Response({'status': 'invalid password'}, status=400)
+            return Response({'error': 'invalid credentials'}, status=400)
 
-        return Response({"message": "login successful", "data": get_tokens_for_user(user), "error": None}, status=status.HTTP_200_OK)
+        return Response({"message": "login successful", "data": {"tokens": get_tokens_for_user(user), "userId": user.id, "role": [user.role], "email": user.email}, "error": None}, status=status.HTTP_200_OK)
     
     except Exception as e:
         print(e)
-        return Response({'status': 'something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': 'something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def logout(request):
@@ -111,12 +111,12 @@ def logout(request):
 
         
         if not request.user.is_authenticated:
-            return Response({'status': 'user is not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'user is not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
         
         refres_token = request.data.get('refresh')
 
         if not refres_token:
-            return Response({'status': 'refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         token = RefreshToken(refres_token)
         token.blacklist()
@@ -125,5 +125,5 @@ def logout(request):
     
     except Exception as e:
         print(e)
-        return Response({'status': 'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST)
 
