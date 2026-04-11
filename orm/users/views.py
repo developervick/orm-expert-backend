@@ -10,6 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.views import APIView
+from django.conf import settings
+from datetime import timezone
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -63,6 +65,11 @@ def verify_otp(request):
 
         if otp_object.is_expired:
             return Response({'error': 'otp is expired'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if otp.object.created_at < timezone.now() - timezone.timedelta(minutes=10):
+            otp_object.is_expired = True
+            otp_object.save()
+            return Response({'error': 'otp is expired'}, status=status.HTTP_400_BAD_REQUEST)
 
         if str(otp_object.otp) != str(otp):
             return Response({'error': 'invalid otp'}, status=status.HTTP_400_BAD_REQUEST)
@@ -73,8 +80,8 @@ def verify_otp(request):
         otp_object.save()
         tokens = get_tokens_for_user(otp_object.user)
         response =  Response({"message": "otp verified successfully", "data": {"tokens": tokens, "userId": otp_object.user.id}, "error": None}, status=200)
-        response.set_cookie('refreshToken', tokens['refresh'], httponly=True, secure=True, samesite='None')
-        response.set_cookie('accessToken', tokens['access'], httponly=True, secure=True, samesite='None')
+        response.set_cookie('refreshToken', tokens['refresh'], httponly=True, secure=settings.COOKIE_SECURE, samesite='Lax', max_age=7*24*60*60)
+        response.set_cookie('accessToken', tokens['access'], httponly=True, secure=settings.COOKIE_SECURE, samesite='Lax', max_age=60*60)
         return response
     except Exception as e:
         print(e)
@@ -104,7 +111,7 @@ def login(request):
             return Response({'error': 'invalid credentials'}, status=400)
         tokens = get_tokens_for_user(user)
         response =  Response({"message": "login successful", "data": {"tokens": tokens, "userId": user.id, "role": [user.role], "email": user.email}, "error": None}, status=status.HTTP_200_OK)
-        response.set_cookie('refreshToken', tokens['refresh'], httponly=True, secure=True, samesite='None', max_age=7*24*60*60)
+        response.set_cookie('refreshToken', str(tokens['refresh']), httponly=True, secure=settings.COOKIE_SECURE, samesite='Lax', max_age=7*24*60*60, path='/')
         return response
     
     except Exception as e:
@@ -120,10 +127,9 @@ def logout(request):
             'error': None
         })
 
-        # ✅ Clear the httpOnly cookie
         response.delete_cookie(
-            key='refresh_token',
-            samesite='Strict'
+            key='refreshToken',
+            samesite='Lax'
         )
 
         return response
@@ -138,8 +144,9 @@ class RefreshTokenView(APIView):
 
     def post(self, request):
         # Read refresh token from httpOnly cookie
-        refresh_token = request.COOKIES.get('refresh_token')
-
+        print("Request cookies:", request.COOKIES)
+        refresh_token = request.COOKIES.get('refreshToken') or request.COOKIES.get('refresh_token')
+        print("Refresh token from cookie:", refresh_token)
         if not refresh_token:
             return Response({
                 'message': 'No refresh token',
@@ -159,11 +166,11 @@ class RefreshTokenView(APIView):
 
             # ✅ Rotate — set new refresh token in cookie
             response.set_cookie(
-                key='refresh_token',
+                key='refreshToken',
                 value=str(refresh),
                 httponly=True,
-                secure=True,
-                samesite='Strict',
+                secure=settings.COOKIE_SECURE,
+                samesite='Lax',
                 max_age=7 * 24 * 60 * 60
             )
 

@@ -1,7 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
-from rest_framework.authentication import authenticate
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -11,6 +10,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['name'] = user.name
+        token['email'] = user.email
+        token['role'] = user.role
 
         return token
     
@@ -20,6 +21,9 @@ def get_tokens_for_user(user):
       raise AuthenticationFailed("User is not active")
 
     refresh = RefreshToken.for_user(user)
+
+    refresh['role'] = user.role
+    refresh['email'] = user.email
 
     return {
         'refresh': str(refresh),

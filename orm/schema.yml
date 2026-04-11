@@ -31,33 +31,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/MyTokenObtainPair'
           description: ''
-  /api/token/refresh/:
-    post:
-      operationId: api_token_refresh_create
-      description: |-
-        Takes a refresh type JSON web token and returns an access type JSON web
-        token if the refresh token is valid.
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TokenRefresh'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/TokenRefresh'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/TokenRefresh'
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenRefresh'
-          description: ''
   /api/v1/login/:
     post:
       operationId: api_v1_login_create
@@ -90,9 +63,20 @@ paths:
       responses:
         '200':
           description: No response body
-  /api/v1/signup/veryfy-otp/:
+  /api/v1/signup/verify-otp/:
     post:
-      operationId: api_v1_signup_veryfy_otp_create
+      operationId: api_v1_signup_verify_otp_create
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/token/refresh/:
+    post:
+      operationId: api_v1_token_refresh_create
       tags:
       - api
       security:
@@ -115,17 +99,6 @@ components:
       required:
       - email
       - password
-    TokenRefresh:
-      type: object
-      properties:
-        access:
-          type: string
-          readOnly: true
-        refresh:
-          type: string
-      required:
-      - access
-      - refresh
   securitySchemes:
     jwtAuth:
       type: http

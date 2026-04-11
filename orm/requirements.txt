@@ -1,5 +1,6 @@
 asgiref==3.11.1
 attrs==26.1.0
+bcrypt==5.0.0
 cffi==2.0.0
 cryptography==46.0.6
 Django==6.0.3
@@ -13,10 +14,12 @@ inflection==0.5.1
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 Markdown==3.10.2
+packaging==26.0
 psycopg2-binary==2.9.11
 pycparser==3.0
 PyJWT==2.12.1
 python-dotenv==1.2.2
+pytz==2026.1.post1
 PyYAML==6.0.3
 referencing==0.37.0
 rpds-py==0.30.0
