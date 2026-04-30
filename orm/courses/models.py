@@ -78,7 +78,7 @@ class Module(SoftDeleteModel):
 
 class Chapter(SoftDeleteModel):
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=250, null=False)
+    name = models.CharField(max_length=250, null=False, default="")
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='chapters')
     order = models.IntegerField(null=False, default=0)
 
@@ -92,7 +92,7 @@ class Chapter(SoftDeleteModel):
 class Exercise(SoftDeleteModel):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=250, null=False)
-    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='exercises')
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='exercises', default=None)
     order = models.IntegerField(null=False, default=0)
 
     class Meta:
