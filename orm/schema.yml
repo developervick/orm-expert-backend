@@ -31,9 +31,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/MyTokenObtainPair'
           description: ''
-  /api/v1/login/:
-    post:
-      operationId: api_v1_login_create
+  /api/v1/courses/:
+    get:
+      operationId: api_v1_courses_retrieve
       tags:
       - api
       security:
@@ -42,6 +42,31 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/login/:
+    post:
+      operationId: api_v1_login_create
+      description: Login with email and password to receive JWT tokens. The refresh
+        token is also set in an httpOnly cookie for secure storage.
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          email:
+            schema:
+              type: string
+          password:
+            schema:
+              type: string
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Login successful
   /api/v1/logout/:
     post:
       operationId: api_v1_logout_create

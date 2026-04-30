@@ -12,6 +12,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.views import APIView
 from django.conf import settings
 from datetime import timezone
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.types import OpenApiTypes
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -88,7 +90,16 @@ def verify_otp(request):
         return Response({'status': 'something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
+@extend_schema(
+    description="Login with email and password to receive JWT tokens. The refresh token is also set in an httpOnly cookie for secure storage.",
+    request={
+        'application/json': OpenApiTypes.OBJECT,
+        'email': OpenApiTypes.STR,
+        'password': OpenApiTypes.STR,
+    },
+    responses={200: OpenApiResponse(description="Login successful")},
+    tags=['Authentication']
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
